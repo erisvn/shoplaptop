@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id                 Int          @id @default(autoincrement())
+  name               String
+  email              String       @unique
+  password           String
+  role               Int          @default(0)
+  created_at         DateTime     @default(now())
+  updated_at         DateTime     @updatedAt
+  default_address_id Int?
+  Reviews            Reviews[]
+  Orders             Orders[]
+  DefaultAddress     UserAddress? @relation(fields: [default_address_id], references: [id])
+}
+
+model Brands {
+  id       Int        @id @default(autoincrement())
+  name     String     @db.VarChar(255)
+  Products Products[]
+}
+
+model Products {
+  id                Int             @id @default(autoincrement())
+  brand_id          Int?
+  category_id       Int?
+  slug              String          @db.VarChar(255)
+  name              String          @db.VarChar(255)
+  short_description String?         @db.Text
+  description       String          @db.Text
+  price             Int
+  discount          Int?
+  stock_status      Boolean         @default(true)
+  status            Int
+  created_at        DateTime        @default(now())
+  updated_at        DateTime        @updatedAt
+  brand             Brands?         @relation(fields: [brand_id], references: [id])
+  category          Categories?     @relation(fields: [category_id], references: [id])
+  images            ProductImages[]
+  reviews           Reviews[]
+  OrderDetails      OrderDetails[]
+}
+
+model ProductImages {
+  id         Int      @id @default(autoincrement())
+  product    Products @relation(fields: [product_id], references: [id])
+  product_id Int
+  image_url  String
+}
+
+model Categories {
+  id        Int        @id @default(autoincrement())
+  name      String     @db.VarChar(255)
+  slug      String     @db.VarChar(255)
+  image_url String
+  Products  Products[]
+}
+
+model Reviews {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  user_id    Int
+  rating     Int
+  images     Json?
+  comment    String   @db.Text
+  user       Users    @relation(fields: [user_id], references: [id])
+  product    Products @relation(fields: [product_id], references: [id])
+}
+
+model UserAddress {
+  id           Int      @id @default(autoincrement())
+  user_id      Int
+  name         String   @db.Text
+  address      String   @db.Text
+  phone_number String   @db.VarChar(20)
+  status       Int      @default(0)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  Orders       Orders[]
+  Users        Users[]
+}
+
+model Orders {
+  id             Int            @id @default(autoincrement())
+  user_id        Int
+  address_id     Int
+  payment_method String
+  note           String         @db.Text
+  status         Int
+  total_price    Int            @default(0)
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @updatedAt
+  user           Users          @relation(fields: [user_id], references: [id])
+  address        UserAddress    @relation(fields: [address_id], references: [id])
+  OrderDetails   OrderDetails[]
+}
+
+model OrderDetails {
+  id         Int      @id @default(autoincrement())
+  order_id   Int
+  product_id Int
+  quantity   Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  order      Orders   @relation(fields: [order_id], references: [id])
+  product    Products @relation(fields: [product_id], references: [id])
+}

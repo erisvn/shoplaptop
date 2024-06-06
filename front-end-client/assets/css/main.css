@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+html {
+    font-family: "Signika Negative", sans-serif;
+    height: 100%;
+}
+
+body {
+    background-color: #ececec;
+    height: 100%;
+}
